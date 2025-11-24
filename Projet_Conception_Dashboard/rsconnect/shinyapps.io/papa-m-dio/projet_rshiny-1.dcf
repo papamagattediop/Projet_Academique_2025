@@ -1,0 +1,13 @@
+name: projet_rshiny-1
+title:
+username: papa-m-dio
+account: papa-m-dio
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14753680
+bundleId: 10282231
+url: https://papa-m-dio.shinyapps.io/projet_rshiny-1/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Rprofile|renv.lock

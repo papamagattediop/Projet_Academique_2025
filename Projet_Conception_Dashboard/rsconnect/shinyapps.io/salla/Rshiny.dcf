@@ -1,0 +1,13 @@
+name: Rshiny
+title: Rshiny
+username: salla
+account: salla
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14766168
+bundleId: 10292391
+url: https://salla.shinyapps.io/Rshiny/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Rprofile|renv.lock

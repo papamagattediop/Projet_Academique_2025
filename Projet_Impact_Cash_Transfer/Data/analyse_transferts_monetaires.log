@@ -1,0 +1,1948 @@
+------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Data\analyse_
+> transferts_monetaires.log
+  log type:  text
+ opened on:  19 Jun 2025, 21:32:49
+
+. 
+. // Installation des packages
+. /*
+>  ______________________________________________________________________________________
+> | Package    | Utilité principale                           | Indicateurs clés         |
+> | ---------- | -------------------------------------------- | ------------------------ |
+> | `povdeco`  | Mesures de pauvreté (FGT, décompositions)    | p0, p1, p2               |
+> | `ineqdeco` | Mesures d'inégalités (Gini, Theil, Atkinson) | Gini, Theil, Atkinson    |
+> | `apoverty` | Mesures avancées de pauvreté                 | FGT, dominance           |
+> | `inequal7` | Inégalités, dominance, tests graphiques      | Gini, courbes de Lorenz  |
+> | `lorenz`   | Tracer courbe de Lorenz                      | Visualisation inégalités |
+>  --------------------------------------------------------------------------------------
+> */
+. /*
+> capture ssc install povdeco
+> capture ssc install ineqdeco  
+> capture ssc install apoverty
+> capture ssc install inequal7
+> capture ssc install lorenz
+> */
+. // Définition des chemins et paramètres
+. global env "C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet"
+
+. global data_path "C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Data"
+
+. global output_path "C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outp
+> uts"
+
+. global temp_path "C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Temp"
+
+. 
+. // Paramètres de l'analyse
+. local annee_base = 2018
+
+. local annee_cible = 2023
+
+. 
+. // Chargement des données
+. cd "$data_path"
+C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Data
+
+. use "ehcvm_individu_SEN2018.dta", clear
+
+. ******************************************************************************
+. *
+. *                    2. EXPLORATION ET NETTOYAGE DES DONNÉES
+. *
+. ******************************************************************************   
+. // Aperçu général des données
+. describe, short
+
+Contains data from ehcvm_individu_SEN2018.dta
+ Observations:        66,120                  
+    Variables:            51                  15 Oct 2020 14:03
+Sorted by: hhid  numind
+
+. 
+. // Structure des données
+. codebook, compact
+
+Variable       Obs Unique      Mean       Min       Max  Label
+------------------------------------------------------------------------------------------------------------------------
+country      66120      1         .         .         .  Pays
+year         66120      1      2018      2018      2018  Annee enquete
+vague        66120      2  1.497701         1         2  Vague
+hhid         66120   7156  313875.6      1001    598012  Idenfiant menage
+grappe       66120    598  313.8691         1       598  Numero de grappe
+menage       66120     12  6.464307         1        12  Numero du menage
+numind       66120     58  7.564534         1        58  Numero individu
+zae          66120      6  3.529356         1         6  Zone agroecologique
+domaine      66120     12  6.515563         1        12  Domaine étude 
+region       66120     14  7.094389         1        14  Region residence
+departement  66120     45  72.86373        11       143  Departement residence
+milieu       66120      2  1.496038         1         2  Milieu residence
+hhweight     66120    596  241.4924  15.29147  2808.649  Ponderation menage
+resid        66120      2  .9998336         0         1  Resident
+sexe         66118      2  1.534136         1         2  Genre
+age          66113    103   22.6785         0       105  Age en annees
+lien         66116     10  4.470098         1        10  Lien de parente
+mstat        66115      7  1.617424         1         7  Situation de famille
+religion     66120      5  1.044298         1         5  Religion
+nation       66111     12  7.014854         1        12  Nationalité 
+agemar       23798     49  21.58589         7        65  Age premier marriage
+mal30j       66120      2  .2324713         0         1  Prob. sante 30 dern. jours
+aff30j       15371     18  8.016069         1        18  probleme sante
+arrmal       66120      2  .1395493         0         1  Arret activite pour maladie
+durarr        9227      3  1.426141         1         3  Duree arret activite pour maladie
+con30j       15371      2  .6181771         0         1  Consulte 30 dern. jours
+hos12m       66120      2  .0241984         0         1  Hospitalisation 12 der. mois
+couvmal      66120      2  .0213854         0         1  Indivu couverture maladie
+moustiq      66120      2  .9997278         0         1  Dormi moustiquire nuit dern.
+handit       55960      2  .1067548         0         1  Handicap tout niveau
+handig       55960      2  .0406898         0         1  Handicap majeur seul
+alfab        66120      2  .4208711         0         1  Alphabetisation
+scol         66120      2  .2490774         0         1  Freq. ecole 2017/18
+educ_scol    16465      8  2.603401         1         8  Niv. educ. actuel
+educ_hi      66116      9   2.16586         1         9  Niv. educ. acheve
+diplome      66120     11  .3545523         0        10  Diplome plus eleve
+telpor       66120      2  .3887024         0         1  Individu a telephone portable
+internet     66120      2  .1773745         0         1  Individu a acces internet
+activ7j      66120      6  4.037719         1         6  Situation activite 7 derniers jours
+activ12m     66120      4  2.582002         1         4  Situation activite 12 derniers mois
+branch       20571     12  5.032813         1        93  Branche activite
+sectins      20569      6  2.988137         1         6  Secteur institutionnel
+csp          20571     10  7.307423         1        10  Categorie socioprofessionnelle
+volhor       17051    712  1817.284         3      5760  Horaire an. travail empl. prin.
+salaire       5585    821   1148035         0  5.40e+07  Salaire an. empl. prin.
+emploi_sec   66120      2  .0454477         0         1  A un emploi secondaire 12 mois
+sectins_sec   3005      6  3.016972         1         6  Secteur instit. emploi sec.
+csp_sec       3005     10  8.237271         1        10  CSP emploi sec.
+volhor_sec    2998    265  697.1513         1      5760  Horaire an. travail emploi sec.
+salaire_sec    334    114  647064.1         0   7200000  Salaire an. emploi sec.
+bank         66120      2  .1068966         0         1  compte banque ou autre
+------------------------------------------------------------------------------------------------------------------------
+
+. 
+. // Recuperation et créations des variables importantes
+. 
+. gen under2 = (age < 2)
+
+. lab var under2 "enfant de moins de 2 ans"
+
+. 
+. gen under5 =(age <5)
+
+. lab var under5 "individu de moins de 5 ans "
+
+. 
+. gen under18 = (age <18)
+
+. lab var under18 "individu de moins de 18 ans"
+
+. 
+. gen elder =(age > 65)
+
+. lab var elder "individu de plus de 65 ans"
+
+. 
+. gen handicap =(handit==1)
+
+. lab var handicap "handicap de l'individu"
+
+. 
+. keep hhid  under2 under5 under18 elder handicap
+
+. *auvegarde des données
+. save scenarios, replace
+file scenarios.dta saved
+
+. 
+. * Merging avec la base welfare pour les autres variables importantes
+. merge m:1 hhid using ehcvm_welfare_SEN2018, nogen
+(label brl already defined)
+(label activl2 already defined)
+(label activl already defined)
+(label educl already defined)
+(label ouinon already defined)
+(label s04q39 already defined)
+(label s04q31 already defined)
+(label s02q33 already defined)
+(label s01q01 already defined)
+(label s01q07 already defined)
+(label s01q14 already defined)
+(label s01q15 already defined)
+(label s00q01 already defined)
+(label s00q04 already defined)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                            66,120  
+    -----------------------------------------
+
+. 
+. * Recalcul du pcexp en intégrant le def_spa
+. replace pcexp = dtot/(hhsize*def_spa*def_temp)
+(66,120 real changes made)
+
+. 
+. * Sauvegarde de la base
+. save ECHVM_2018,replace
+file ECHVM_2018.dta saved
+
+. 
+. ******************************************************************************
+. *
+. *                    3. VIEILLISSEMENT DES DONNÉES (2018 → 2023)
+. *
+. ******************************************************************************
+. 
+. /*
+>                 Cette étape permet d'amener  les données importantes de 2018 au réalité de 2023.
+>                 Processus:
+>                 1. Mise à jour des poids (hhweight)
+>                 2. Mise à jour du seuil de pauvrete (zref)
+>                 3. Mise à jour de l'indicateurs de bien être (pcexp)
+> */
+. // valeurs des taux de croissance (source : ANSD / BCEAO)
+. scalar t_crois_pop = 0.15 // taux de croissance de la population entre 2018 et 2023
+
+. scalar t_crois_pib_t= 0.26 // taux de croissance du PIB par tête entre 2018 et 2023
+
+. scalar t_crois_i_prix= 0.2 // taux de croissance de l'IHPC entre 2018 et 2023
+
+. 
+. // Mise à jour des poids
+. replace year =2023
+(66,120 real changes made)
+
+. replace hhweight =(1+t_crois_pop)*hhweight 
+(66,120 real changes made)
+
+. 
+. // Mise à jour du seuil 
+. replace zref = (1 + t_crois_i_prix)*zref
+(66,120 real changes made)
+
+. 
+. // Mise à jour de l'indicateur de bien être
+. 
+. replace pcexp = (1 + t_crois_pib_t)*pcexp
+(66,120 real changes made)
+
+. 
+. 
+. // Sauvegarde de la base 
+. save ECHVM_2023,replace
+file ECHVM_2023.dta saved
+
+. 
+. *******************************************************************************
+. *
+. *                    4. CALCUL DES INDICATEURS DE BASE (2018 vs 2023)
+. *
+. *******************************************************************************
+. 
+. /*
+>                 - Indicateurs de pauvreté FGT 2018 et 2023
+>                 - Indices d'inégalité Gini 2018 et 2023
+>                 
+>  */
+.  
+. * Initialiser les matrices (2 années × 2 milieux × 4 indicateurs)
+. matrix base_2018_nat = J(1, 4, .)
+
+. matrix base_2023_nat = J(1, 4, .)
+
+. matrix base_2018_urbain = J(1, 4, .)
+
+. matrix base_2018_rural = J(1, 4, .)
+
+. matrix base_2023_urbain = J(1, 4, .)
+
+. matrix base_2023_rural = J(1, 4, .)
+
+. 
+. * Boucle sur les bases
+. foreach annee in 2018 2023 {
+  2.     use ECHVM_`annee', clear
+  3. preserve
+  4.     * Bien-être et poids
+.     gen w_pcexp = hhweight * pcexp
+  5.     sum w_pcexp
+  6.     scalar totalY = r(sum)
+  7.     sum hhweight
+  8.     scalar totalW = r(sum)
+  9.     scalar mu = totalY / totalW
+ 10. 
+.     * ==== NIVEAU NATIONAL ====
+.     gen pauvre = pcexp <= zref
+ 11.     sum pauvre [iw=hhweight]
+ 12.     scalar P0 = r(mean) * 100
+ 13. 
+.     gen p1 = ((zref - pcexp) / zref) * pauvre
+ 14.     sum p1 [iw=hhweight]
+ 15.     scalar P1 = r(mean) * 100
+ 16. 
+.     gen p2 = ((zref - pcexp) / zref)^2 * pauvre
+ 17.     sum p2 [iw=hhweight]
+ 18.     scalar P2 = r(mean) * 100
+ 19. 
+.     * Gini (trapèze)
+.     sort pcexp
+ 20.     gen cumw = sum(hhweight)
+ 21.     gen cumwfrac = cumw / totalW
+ 22.     gen cumwinc = sum(w_pcexp)
+ 23.     gen Lor = cumwinc / totalY
+ 24.     gen LagLor = Lor[_n-1]
+ 25.     replace LagLor = 0 if _n == 1
+ 26.     gen dX = cumwfrac - cumwfrac[_n-1]
+ 27.     replace dX = cumwfrac if _n == 1
+ 28.     gen trapeze = dX * (Lor + LagLor)
+ 29.     sum trapeze
+ 30.     scalar A = r(sum)
+ 31.     scalar Gini = (1 - A) 
+ 32. 
+.     if "`annee'" == "2018" {
+ 33.         matrix base_2018_nat[1,1] = P0
+ 34.         matrix base_2018_nat[1,2] = P1
+ 35.         matrix base_2018_nat[1,3] = P2
+ 36.         matrix base_2018_nat[1,4] = Gini
+ 37.     }
+ 38.     else {
+ 39.         matrix base_2023_nat[1,1] = P0
+ 40.         matrix base_2023_nat[1,2] = P1
+ 41.         matrix base_2023_nat[1,3] = P2
+ 42.         matrix base_2023_nat[1,4] = Gini
+ 43.     }
+ 44. restore
+ 45.     * ==== PAR MILIEU ====
+.     foreach m in 1 2 {
+ 46.         preserve
+ 47.         keep if milieu == `m'
+ 48. 
+.         gen w_pcexp = hhweight * pcexp
+ 49.         sum w_pcexp
+ 50.         scalar totalY = r(sum)
+ 51.         sum hhweight
+ 52.         scalar totalW = r(sum)
+ 53.         scalar mu = totalY / totalW
+ 54. 
+.         gen pauvre = pcexp <= zref
+ 55.         sum pauvre [iw=hhweight]
+ 56.         scalar P0 = r(mean) * 100
+ 57. 
+.         gen p1 = ((zref - pcexp) / zref) * pauvre
+ 58.         sum p1 [iw=hhweight]
+ 59.         scalar P1 = r(mean) * 100
+ 60. 
+.         gen p2 = ((zref - pcexp) / zref)^2 * pauvre
+ 61.         sum p2 [iw=hhweight]
+ 62.         scalar P2 = r(mean) * 100
+ 63. 
+.         sort pcexp
+ 64.         gen cumw = sum(hhweight)
+ 65.         gen cumwfrac = cumw / totalW
+ 66.         gen cumwinc = sum(hhweight * pcexp)
+ 67.         gen Lor = cumwinc / totalY
+ 68.         gen LagLor = Lor[_n-1]
+ 69.         replace LagLor = 0 if _n == 1
+ 70.         gen dX = cumwfrac - cumwfrac[_n-1]
+ 71.         replace dX = cumwfrac if _n == 1
+ 72.         gen trapeze = dX * (Lor + LagLor)
+ 73.         sum trapeze
+ 74.         scalar A = r(sum)
+ 75.         scalar Gini = (1 - A) 
+ 76. 
+.         if "`annee'" == "2018" & `m' == 1 {
+ 77.             matrix base_2018_urbain[1,1] = P0
+ 78.             matrix base_2018_urbain[1,2] = P1
+ 79.             matrix base_2018_urbain[1,3] = P2
+ 80.             matrix base_2018_urbain[1,4] = Gini
+ 81.         }
+ 82.         if "`annee'" == "2018" & `m' == 2 {
+ 83.             matrix base_2018_rural[1,1] = P0
+ 84.             matrix base_2018_rural[1,2] = P1
+ 85.             matrix base_2018_rural[1,3] = P2
+ 86.             matrix base_2018_rural[1,4] = Gini
+ 87.         }
+ 88.         if "`annee'" == "2023" & `m' == 1 {
+ 89.             matrix base_2023_urbain[1,1] = P0
+ 90.             matrix base_2023_urbain[1,2] = P1
+ 91.             matrix base_2023_urbain[1,3] = P2
+ 92.             matrix base_2023_urbain[1,4] = Gini
+ 93.         }
+ 94.         if "`annee'" == "2023" & `m' == 2 {
+ 95.             matrix base_2023_rural[1,1] = P0
+ 96.             matrix base_2023_rural[1,2] = P1
+ 97.             matrix base_2023_rural[1,3] = P2
+ 98.             matrix base_2023_rural[1,4] = Gini
+ 99.         }
+100. 
+.         restore
+101.     }
+102. }
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.22e+08    2.06e+08    2178404   1.11e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    241.4924    183.1109   15.29147   2808.649
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  15967475.9    .3767244   .4845649          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  15967475.9    .1031765   .1694262          0   .8059565
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  15967475.9    .0393506   .0857172          0    .649566
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.82e-06     .000015   3.02e-11   .0003152
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    1.49e+08    2.77e+08    2178404   1.11e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    224.3419    228.4199   15.29147   2808.649
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  7475522.03    .1948731    .396103          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  7475522.03    .0465153    .120733          0   .7977842
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  7475522.03    .0167401    .057646          0   .6364596
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195    .0000349   3.37e-11   .0006291
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    9.56e+07    7.79e+07    4103042   1.40e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    258.9168    118.2546   37.58902   749.2012
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  8491953.86    .5368092   .4986433          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  8491953.86    .1530557   .1892848          0   .8059565
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  8491953.86    .0592548   .1002193          0    .649566
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000222    .0000218   1.46e-10    .000167
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.77e+08    2.99e+08    3156508   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3439299    .475018          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0903201   .1590811          0   .7962544
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0334645   .0786883          0    .634021
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.82e-06     .000015   3.02e-11   .0003152
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.15e+08    4.02e+08    3156508   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33    .1668029   .3727998          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0398112   .1115774          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0140344   .0524063          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195    .0000349   3.37e-11   .0006291
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.39e+08    1.13e+08    5945307   2.03e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92     .499856         .5          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1347834   .1800066          0   .7962544
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0505689   .0927361          0    .634021
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000222    .0000218   1.46e-10    .000167
+
+. 
+. * Sauvegarde des résultats
+. putexcel set "$output_path\indices_base_2018_2023.xlsx", sheet("National") replace
+note: file will be replaced when the first putexcel command is issued.
+
+. putexcel A1 = "Année" B1 = "P0 (%)" C1 = "P1 (%)" D1 = "P2 (%)" E1 = "Gini"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. putexcel A2 = "2018" B2 = matrix(base_2018_nat)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. putexcel A3 = "2023" B3 = matrix(base_2023_nat)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. 
+. putexcel set "$output_path\indices_base_2018_2023.xlsx", sheet("Urbain") modify
+
+. putexcel A1 = "Année" B1 = "P0 (%)" C1 = "P1 (%)" D1 = "P2 (%)" E1 = "Gini"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. putexcel A2 = "2018" B2 = matrix(base_2018_urbain)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. putexcel A3 = "2023" B3 = matrix(base_2023_urbain)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. 
+. putexcel set "$output_path\indices_base_2018_2023.xlsx", sheet("Rural") modify
+
+. putexcel A1 = "Année" B1 = "P0 (%)" C1 = "P1 (%)" D1 = "P2 (%)" E1 = "Gini "
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. putexcel A2 = "2018" B2 = matrix(base_2018_rural)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. putexcel A3 = "2023" B3 = matrix(base_2023_rural)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_base_
+> 2018_2023.xlsx saved
+
+. 
+. ****************************************************************************
+. *
+. *                    5.DÉFINITION DES SCÉNARIOS DE TRANSFERTS
+. *
+. *****************************************************************************
+. 
+. /* 
+>                 - Création des 8 variables de ciblage pour les scenarios
+>                 - Determination du Nb de bénéficiaires, du Coût total et de la
+>                   Part dans le PIB pour chaque scenarios
+> 
+>  */
+.  
+. use ECHVM_2023, clear
+
+. 
+. // Definition des scenarios
+. gen sc1 = 1
+
+. gen sc2 = (milieu == 2)
+
+. gen sc3 = (under2 == 1)
+
+. gen sc4 = (under2 == 1 & milieu == 2)
+
+. gen sc5 = (under5 == 1)
+
+. gen sc6 = (under18 == 1)
+
+. gen sc7 = (elder == 1)
+
+. gen sc8 = (handicap == 1)
+
+. 
+. * Passer au niveau ménage 
+. collapse (max) sc1-sc8 hhweight eqadu2 dtot def_spa def_temp hhsize pcexp milieu, by(hhid)
+
+. 
+. * Sauvegarde de la base ménage
+. save ECHVM_menage_2023, replace
+file ECHVM_menage_2023.dta saved
+
+. 
+. //  Determination des bénéficiaires, du coût total et de la Part dans le PIB
+. * Paramètres globaux (en milliards de FCFA)
+. scalar transfert = 100000
+
+. scalar pib = 18619.5e9
+
+. 
+. * Initialisation de la matrice vide
+. matrix results = J(8, 4, .)  // 8 scénarios, 4 colonnes (Scénario, Nb Bénéficiaires, Coût, Part PIB)
+
+. 
+. * Définir les scénarios et les labels
+. local scenarios sc1 sc2 sc3 sc4 sc5 sc6 sc7 sc8
+
+. local noms "Universel" "Rural" "under2" "under2 and rural" "under5" "under18" "Elder" "Handicap"
+
+. 
+. * Boucle sur chaque scénario*
+. local i = 1
+
+. foreach sc of local scenarios {
+  2.     
+.         use ECHVM_menage_2023, clear
+  3. 
+.     * Variable bénéficiaire pondérée
+.     gen benef_poids = `sc' * hhweight
+  4.     quietly summarize benef_poids
+  5.     scalar nb_benef = r(sum)
+  6. 
+.     * Coût total
+.     scalar cout = nb_benef * transfert
+  7. 
+.     * Part du PIB
+.     scalar part = (cout / pib) * 100
+  8. 
+.     * Stockage dans la matrice
+.     matrix results[`i', 1] = nb_benef
+  9.     matrix results[`i', 2] = cout
+ 10.     matrix results[`i', 3] = part
+ 11.     matrix results[`i', 4] = `i'
+ 12. 
+.     local ++i
+ 13. }
+
+. 
+. * Affichage dans Stata
+. matlist results, format(%20.0g)
+
+             |                   c1                    c2                    c3                    c4 
+-------------+---------------------------------------------------------------------------------------
+          r1 |  2060440.18007659912   206044018007.659912   1.10660338896135735                     1 
+          r2 |  958997.546127319336   95899754612.7319336   .515050106677042541                     2 
+          r3 |  789606.409175872803   78960640917.5872803   .424074980088548492                     3 
+          r4 |  457138.078590393066   45713807859.0393066   .245515764972417672                     4 
+          r5 |  1322195.09559822083   132219509559.822083   .710113104862225564                     5 
+          r6 |  1821880.19729042053   182188019729.042053   .978479656967383926                     6 
+          r7 |  616807.772064208984   61680777206.4208984   .331269782789123779                     7 
+          r8 |  1032193.80696296692   103219380696.296692   .554361721293787135                     8 
+
+. 
+. * Export Excel
+. putexcel set "$output_path\resultats_transferts.xlsx", sheet("Scénarios") replace
+note: file will be replaced when the first putexcel command is issued.
+
+. putexcel A1 = ("Scénario") B1 = ("Nb bénéficiaires") C1 = ("Coût total (FCFA)") D1 = ("Part PIB (%)")
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\resultats_tra
+> nsferts.xlsx saved
+
+. 
+. * Ajouter les valeurs numériques (colonnes B, C, D)
+. putexcel B2 = matrix(results)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\resultats_tra
+> nsferts.xlsx saved
+
+. 
+. ****************************************************************************
+. *
+. *                    6.SIMULATION DES TRANSFERTS MONÉTAIRES
+. *
+. *****************************************************************************
+. /*
+>                 - Application des transferts
+>                 - Ajuster la dépense de consommation (pcexp) après transfert
+>                 - Recalculer les FGT et Gini après transfert pour chaque scénario
+> */
+. 
+. // Application des transfert
+. foreach s in 1 2 3 4 5 6 7 8 {
+  2.     
+.     * 1. Appliquer le transfert au ménage
+.     gen transfert_menage`s' = sc`s' * transfert
+  3. 
+.     * 3. Recalcul de la dépense par tête corrigée (pcexp)
+.     gen pcexp_post`s' = pcexp + transfert_menage`s'/ (hhsize * def_temp * def_spa)
+  4. }
+
+. 
+. merge 1:m hhid using ECHVM_2023 , nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                            66,120  
+    -----------------------------------------
+
+. 
+. // Recalculer les FGT et Gini après transfert pour chaque scénario
+. 
+. * Initialisation
+. matrix indicateurs_final = J(9, 4, .)
+
+. scalar z = zref
+
+. 
+. * Situation de référence
+. preserve
+
+. 
+. sort pcexp
+
+. sum hhweight
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+. scalar totalW = r(sum)
+
+. 
+. gen w_pcexp = hhweight * pcexp
+
+. sum w_pcexp
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.77e+08    2.99e+08    3156508   1.61e+10
+
+. scalar totalY = r(sum)
+
+. scalar mu = totalY / totalW
+
+. 
+. gen pauvre = pcexp < z
+
+. sum pauvre [iw=hhweight]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3439299    .475018          0          1
+
+. scalar P0 = r(mean) * 100
+
+. 
+. gen p1 = ((z - pcexp) / z) * pauvre
+
+. sum p1 [iw=hhweight]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0903201   .1590811          0   .7962544
+
+. scalar P1 = r(mean) * 100
+
+. 
+. gen p2 = ((z - pcexp) / z)^2 * pauvre
+
+. sum p2 [iw=hhweight]
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0334645   .0786883          0    .634021
+
+. scalar P2 = r(mean) * 100
+
+. 
+. gen cumw = sum(hhweight)
+
+. gen cumwfrac = cumw / totalW
+
+. 
+. gen cumwinc = sum(w_pcexp)
+
+. gen Lor = cumwinc / totalY
+
+. 
+. gen LagLor = Lor[_n-1]
+(1 missing value generated)
+
+. replace LagLor = 0 if _n == 1
+(1 real change made)
+
+. gen dX = cumwfrac - cumwfrac[_n-1]
+(1 missing value generated)
+
+. replace dX = cumwfrac if _n == 1
+(1 real change made)
+
+. gen trapeze = dX * (Lor + LagLor)
+
+. sum trapeze
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.82e-06     .000015   3.02e-11   .0003152
+
+. scalar A = r(sum)
+
+. scalar Gini = (1 - A) 
+
+. 
+. * Stocker dans la première ligne
+. matrix indicateurs_final[1, 1] = P0
+
+. matrix indicateurs_final[1, 2] = P1
+
+. matrix indicateurs_final[1, 3] = P2
+
+. matrix indicateurs_final[1, 4] = Gini
+
+. 
+. restore
+
+. 
+. * calcul des indicateurs pour les scenarios
+. local i = 2
+
+. foreach s in 1 2 3 4 5 6 7 8 {
+  2.     preserve
+  3. 
+.     sort pcexp_post`s'
+  4. 
+.     sum hhweight
+  5.     scalar totalW = r(sum)
+  6. 
+.     gen w_pcexp = hhweight * pcexp_post`s'
+  7.     sum w_pcexp
+  8.     scalar totalY = r(sum)
+  9.     scalar mu = totalY / totalW
+ 10. 
+.     gen pauvre = pcexp_post`s' < z
+ 11.     sum pauvre [iw=hhweight]
+ 12.     scalar P0 = r(mean) * 100
+ 13. 
+.     gen p1 = ((z - pcexp_post`s') / z) * pauvre
+ 14.     sum p1 [iw=hhweight]
+ 15.     scalar P1 = r(mean) * 100
+ 16. 
+.     gen p2 = ((z - pcexp_post`s') / z)^2 * pauvre
+ 17.     sum p2 [iw=hhweight]
+ 18.     scalar P2 = r(mean) * 100
+ 19. 
+.     gen cumw = sum(hhweight)
+ 20.     gen cumwfrac = cumw / totalW
+ 21. 
+.     gen cumwinc = sum(w_pcexp)
+ 22.     gen Lor = cumwinc / totalY
+ 23. 
+.     gen LagLor = Lor[_n-1]
+ 24.     replace LagLor = 0 if _n == 1
+ 25.     gen dX = cumwfrac - cumwfrac[_n-1]
+ 26.     replace dX = cumwfrac if _n == 1
+ 27.     gen trapeze = dX * (Lor + LagLor)
+ 28.     sum trapeze
+ 29.     scalar A = r(sum)
+ 30.     scalar Gini = (1 - A) 
+ 31. 
+.     matrix indicateurs_final[`i', 1] = P0
+ 32.     matrix indicateurs_final[`i', 2] = P1
+ 33.     matrix indicateurs_final[`i', 3] = P2
+ 34.     matrix indicateurs_final[`i', 4] = Gini
+ 35. 
+.     restore
+ 36.     local ++i
+ 37. }
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.80e+08    3.02e+08    3381760   1.62e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3269257   .4690899          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0834011   .1521214          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0300966   .0734626          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.87e-06     .000015   3.13e-11   .0003151
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.79e+08    2.99e+08    3156508   1.61e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3     .331819   .4708664          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0848715   .1535459          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0307795   .0745482          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.88e-06     .000015   9.56e-12   .0003153
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.78e+08    2.99e+08    3381760   1.61e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3344382   .4717937          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0862468   .1548862          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0314283   .0755121          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.86e-06     .000015   9.58e-12   .0003156
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.78e+08    2.99e+08    3156508   1.61e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3374961   .4728557          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0870239   .1555668          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0317742   .0759767          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.86e-06     .000015   9.61e-12   .0003154
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.79e+08    3.00e+08    3381760   1.61e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3302137   .4702899          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0842838   .1528899          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0304791   .0740644          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.88e-06     .000015   3.14e-11   .0003158
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.80e+08    3.00e+08    3381760   1.61e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3270893   .4691502          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3     .083422   .1521317          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0301033   .0734664          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.88e-06     .000015   3.13e-11   .0003158
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.78e+08    2.99e+08    3156508   1.62e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3393461   .4734874          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0879832    .156681          0   .7962544
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3      .03229    .076903          0    .634021
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.84e-06     .000015   3.00e-11   .0003153
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     66,120    277.7162    210.5775   17.58519   3229.946
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     66,120    1.79e+08    3.00e+08    3156508   1.62e+10
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  66,120  18362597.3    .3352404   .4720744          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  66,120  18362597.3    .0865923   .1553529          0   .7962544
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  66,120  18362597.3    .0316327   .0759622          0    .634021
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     66,120    9.85e-06     .000015   2.99e-11   .0003153
+
+. 
+. * Sauvegarde des résultats
+. 
+.         ** Transposer la matrice
+. matrix indicateurs_transpose = indicateurs_final'
+
+. 
+.         ** Export vers Excel
+. putexcel set "$output_path\indices_FGT_Gini_transpose.xlsx", sheet("Résultats") replace
+note: file will be replaced when the first putexcel command is issued.
+
+. 
+. * Écrire manuellement les noms des scénarios en B1 à J1
+. putexcel B1 = "Réf_2023"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel C1 = "Universel"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel D1 = "Rural"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel E1 = "under2"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel F1 = "under2_rural"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel G1 = "under5"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel H1 = "under18"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel I1 = "Elder"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel J1 = "Handicap"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. 
+. * Écrire les noms des indices 
+. putexcel A1 = "Scénarios"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel A2 = "P0 (%)"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel A3 = "P1 (%)"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel A4 = "P2 (%)"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel A5 = "Gini "
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. 
+. * Coller la matrice transposée (indices en lignes, scénarios en colonnes)
+. putexcel B2 = matrix(indicateurs_transpose)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+.         ** Coller la matrice (indices en lignes, scénarios en colonnes)
+. putexcel B2 = matrix(indicateurs_transpose)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. 
+. ***************************************************************************
+. *
+. *                    7. Calcul de L'efficacité des scenarios
+. *
+. ***************************************************************************
+. 
+. * Initialisation d'une ligne (1 × 8) pour les efficacités
+. matrix efficacite = J(1, 8, .)
+
+. 
+. * Extraire P1 de base (référence)
+. scalar P1_base = indicateurs_final[1, 2]
+
+. 
+. forvalues i = 1/8 {
+  2.     * P1 après transfert
+.     scalar P1_s = indicateurs_final[`i'+1, 2]
+  3. 
+.     * Gap de la base et final 
+.     scalar gap_reduction = P1_base - P1_s
+  4. 
+.     * Coût total du scénario `i`
+.     scalar cout_total = results[`i', 2]
+  5. 
+.     * Calcul efficacité (% de réduction du gap par FCFA dépensé)
+.     scalar eff = (gap_reduction / cout_total)
+  6.     matrix efficacite[1, `i'] = eff
+  7. }
+
+. 
+. * Enregistrer dans la base 
+. putexcel A6 = "Efficacité"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. putexcel C6 = matrix(efficacite)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_FGT_G
+> ini_transpose.xlsx saved
+
+. 
+. ***************************************************************************
+. *
+. *                    8. Résultats selon le milieu de residence
+. *
+. ***************************************************************************
+. 
+. * Initialiser matrices pour résultats (8 scénarios × 4 indices × 2 milieux)
+. matrix FGT_urbain = J(8, 4, .)
+
+. matrix FGT_rural  = J(8, 4, .)
+
+. 
+. scalar z = zref
+
+. 
+. local scen = 1
+
+. foreach s in 1 2 3 4 5 6 7 8 {
+  2.     
+.     foreach m in 1 2 {
+  3.         preserve
+  4. 
+.         * Restreindre au milieu m (1 = urbain, 2 = rural)
+.         keep if milieu == `m'
+  5. 
+.         * Moyenne pondérée
+.         gen w_pcexp = hhweight * pcexp_post`s'
+  6.         sum w_pcexp
+  7.         scalar totalY = r(sum)
+  8. 
+.         sum hhweight
+  9.         scalar totalW = r(sum)
+ 10.         scalar mu = totalY / totalW
+ 11. 
+.         * FGT
+.         gen pauvre = pcexp_post`s' <= z
+ 12.         sum pauvre [iw=hhweight]
+ 13.         scalar P0 = r(mean) * 100
+ 14. 
+.         gen p1 = ((z - pcexp_post`s') / z) * pauvre
+ 15.         sum p1 [iw=hhweight]
+ 16.         scalar P1 = r(mean) * 100
+ 17. 
+.         gen p2 = ((z - pcexp_post`s') / z)^2 * pauvre
+ 18.         sum p2 [iw=hhweight]
+ 19.         scalar P2 = r(mean) * 100
+ 20. 
+.         * Gini (méthode des trapèzes)
+.         sort pcexp_post`s'
+ 21.         gen cumw = sum(hhweight)
+ 22.         gen cumwfrac = cumw / totalW
+ 23. 
+.         gen cumwinc = sum(w_pcexp)
+ 24.         gen Lor = cumwinc / totalY
+ 25.         gen LagLor = Lor[_n-1]
+ 26.         replace LagLor = 0 if _n == 1
+ 27.         gen dX = cumwfrac - cumwfrac[_n-1]
+ 28.         replace dX = cumwfrac if _n == 1
+ 29.         gen trapeze = dX * (Lor + LagLor)
+ 30.         sum trapeze
+ 31.         scalar A = r(sum)
+ 32.         scalar Gini = (1 - A) 
+ 33. 
+.         * Stockage dans la matrice correspondante
+.         if `m' == 1 {
+ 34.             matrix FGT_urbain[`scen', 1] = P0
+ 35.             matrix FGT_urbain[`scen', 2] = P1
+ 36.             matrix FGT_urbain[`scen', 3] = P2
+ 37.             matrix FGT_urbain[`scen', 4] = Gini
+ 38.         }
+ 39.         else if `m' == 2 {
+ 40.             matrix FGT_rural[`scen', 1] = P0
+ 41.             matrix FGT_rural[`scen', 2] = P1
+ 42.             matrix FGT_rural[`scen', 3] = P2
+ 43.             matrix FGT_rural[`scen', 4] = Gini
+ 44.         }
+ 45. 
+.         restore
+ 46.     }
+ 47. 
+.     local ++scen
+ 48. }
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.18e+08    4.06e+08    3381760   1.62e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33     .156351   .3631878          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0366704   .1059772          0    .769904
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0125759   .0485102          0   .5927522
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195     .000035   3.60e-11   .0006288
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.42e+08    1.15e+08    6089927   2.09e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4770837   .4994746          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1245384   .1732353          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0455203   .0869935          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000223    .0000218   1.51e-10   .0001669
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.15e+08    4.02e+08    3156508   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33    .1668029   .3727998          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0398112   .1115774          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0140344   .0524063          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195    .0000349   3.37e-11   .0006291
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.42e+08    1.15e+08    6089927   2.09e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4770837   .4994746          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1245384   .1732353          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0455203   .0869935          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000223    .0000218   1.51e-10   .0001669
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.16e+08    4.03e+08    3381760   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33    .1602712   .3668574          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0381514    .108812          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0132956    .050691          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195     .000035   3.35e-11   .0006303
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.40e+08    1.13e+08    6089927   2.03e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4877585   .4998501          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1285855   .1756597          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0473906   .0889685          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000223    .0000218   1.53e-10   .0001671
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.15e+08    4.02e+08    3156508   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33    .1668029   .3727998          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0398112   .1115774          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0140344   .0524063          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195    .0000349   3.37e-11   .0006291
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.40e+08    1.13e+08    6089927   2.03e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4877585   .4998501          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1285855   .1756597          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0473906   .0889685          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000223    .0000218   1.53e-10   .0001671
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.17e+08    4.03e+08    3381760   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33     .157548   .3643167          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0372419   .1071208          0    .769904
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0128618   .0494591          0   .5927522
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000196     .000035   3.62e-11   .0006306
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.41e+08    1.14e+08    6089927   2.03e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4822123   .4996835          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1256951   .1737482          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0459877   .0874491          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000223    .0000218   1.52e-10   .0001669
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.18e+08    4.04e+08    3381760   1.61e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33    .1563865   .3632214          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0366932   .1060203          0    .769904
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0125867   .0485268          0   .5927522
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000196    .0000351   3.61e-11   .0006306
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.42e+08    1.14e+08    6089927   2.03e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4773601   .4994872          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1245577     .17323          0   .7854666
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0455232   .0869928          0   .6169577
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000223    .0000218   1.51e-10   .0001672
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.16e+08    4.03e+08    3156508   1.62e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33    .1641704   .3704301          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0388983   .1099537          0   .7876734
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0136029   .0513617          0   .6204295
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195     .000035   3.35e-11   .0006293
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.40e+08    1.13e+08    6089927   2.03e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4935544   .4999585          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92    .1311931   .1775633          0   .7962544
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0487404    .090664          0    .634021
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000222    .0000218   1.45e-10   .0001673
+(32,798 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     33,322    2.17e+08    4.04e+08    3156508   1.62e+10
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     33,322    257.9932    262.6829   17.58519   3229.946
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  33,322  8596850.33     .161604   .3680872          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  33,322  8596850.33    .0381572   .1085165          0    .769904
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  33,322  8596850.33    .0132318   .0502406          0   .5927522
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     33,322    .0000195     .000035   3.62e-11   .0006293
+(33,322 observations deleted)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     w_pcexp |     32,798    1.40e+08    1.14e+08    5978782   2.09e+09
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+    hhweight |     32,798    297.7543    135.9928   43.22738   861.5814
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+      pauvre |  32,798  9765746.92    .4880936   .4998582          0          1
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p1 |  32,798  9765746.92      .12923   .1764392          0   .7962544
+
+    Variable |     Obs      Weight        Mean   Std. dev.       Min        Max
+-------------+-----------------------------------------------------------------
+          p2 |  32,798  9765746.92    .0478312   .0898188          0    .634021
+(1 missing value generated)
+(1 real change made)
+(1 missing value generated)
+(1 real change made)
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+     trapeze |     32,798    .0000222    .0000218   1.45e-10   .0001672
+
+. 
+. * Sauvegarde des résultats
+.         ** Labels de lignes
+. putexcel set "$output_path\indices_urbain_rural.xlsx", sheet("Urbain_rural") replace
+note: file will be replaced when the first putexcel command is issued.
+
+. 
+. putexcel C1= "Urbain" I1= "Rural" C12= "Situation de référence 2023"
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. 
+. putexcel A2 = "Scénario" B2 = "P0 (%)" C2 = "P1 (%)" D2 = "P2 (%)" E2 = "Gini "
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. putexcel G2 = "Scénario" H2 = "P0 (%)" I2 = "P1 (%)" J2 = "P2 (%)" K2 = "Gini "
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. putexcel C13 = "P0 (%)" D13 = "P1 (%)" E13 = "P2 (%)" F13 = "Gini "
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. 
+. putexcel A3 = ("Universel") A4 = ("Rural") A5 = ("under2") A6 = ("under2_rural") A7 = ("under5") A8 = ("under18") A9 =
+>  ("Elder") A10 = ("Handicap") 
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. 
+. putexcel G3 = ("Universel") G4 = ("Rural") G5 = ("under2") G6 = ("under2_rural") G7 = ("under5") G8 = ("under18") G9 =
+>  ("Elder") G10 = ("Handicap") 
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. 
+. putexcel B3 = matrix(FGT_urbain) 
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. putexcel H3     = matrix(FGT_rural)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. 
+. * Sauvegarde des valeurs pour la situation de référence
+. scalar C14 = indicateurs_final[1, 1] 
+
+. scalar D14 = indicateurs_final[1, 2] 
+
+. scalar E14 = indicateurs_final[1, 3] 
+
+. scalar F14 = indicateurs_final[1, 4] 
+
+. 
+. putexcel C14 = C14
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. putexcel D14 = D14 
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. putexcel E14 = E14 
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. putexcel F14 = F14 
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des ménages\Projet\Outputs\indices_urbai
+> n_rural.xlsx saved
+
+. 
+. ***************************************************************************
+. *
+. *                       "--"FIN DO-FILE "--"
+. *
+. ***************************************************************************
+.     
+. 
+end of do-file
+
+. do "C:\Users\PAPAMA~1\AppData\Local\Temp\STD81c_000000.tmp"
+
+. * Après la section 5, ajouter :
+. use ECHVM_menage_2023, clear
+
+. 
+. * Créer une base pour le graphique
+. clear
+
+. input str20 scenario cout_milliards
+
+                 scenario  cout_mi~s
+  1. "Universel" 0
+  2. "Rural" 0  
+  3. "under2" 0
+  4. "under2_rural" 0
+  5. "under5" 0
+  6. "under18" 0
+  7. "Elder" 0
+  8. "Handicap" 0
+  9. end
+
+. 
+. * Remplacer par les valeurs réelles de votre matrice results
+. * (À adapter avec vos résultats)
+. replace cout_milliards = cout_total/1e9  // Convertir en milliards
+(8 real changes made)
+
+. 
+. * Trier par coût décroissant
+. gsort -cout_milliards
+
+. 
+. * Graphique en barres
+. graph hbar cout_milliards, over(scenario, sort(1) descending) ///
+>     title("Classement des scénarios par coût", size(medium)) ///
+>     subtitle("Du plus coûteux au moins coûteux") ///
+>     ytitle("Coût (milliards FCFA)") ///
+>     note("Source: Simulations EHCVM 2018, vieilli à 2023") ///
+>     scheme(s2color)
+
+. 
+. graph export "$output_path/classement_couts.png", replace
+(file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des
+    ménages\Projet\Outputs/classement_couts.png not found)
+file C:\Users\Papa Magatte Diop\Desktop\Etude AS2\SEMESTRE 2\Condditions de vie des
+    ménages\Projet\Outputs/classement_couts.png saved as PNG format
+
+. 
+end of do-file
+
